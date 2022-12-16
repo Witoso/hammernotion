@@ -46,9 +46,9 @@ function HammerNotion:createPage(databaseName, properties)
         print(jsonData)
     end
     if statusCode == 200 then
-        hs.alert.show("New page added to database: " .. databaseName)
+        hs.notify.show("HammerNotion", "New page added to the database: " .. databaseName, "")
     else
-        hs.alert.show("Error adding task. Status Code: " .. statusCode)
+        hs.notify.show("HammerNotion", "Error adding task. Status Code: " .. statusCode, "")
     end
 end
 
