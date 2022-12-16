@@ -5,12 +5,7 @@ HammerNotion.name = "HammerNotion"
 HammerNotion.version = "0.1"
 HammerNotion.author = "Witek Socha"
 HammerNotion.license = "MIT - https://opensource.org/licenses/MIT"
-HammerNotion.homepage = "https://github.com/malob/Asana.spoon"
-
--- function HammerNotion:sayHello ()
---     button, response = hs.dialog.textPrompt("how are you?", "text")
--- hs.alert.show(response) 
--- end 
+HammerNotion.homepage = ""
 
 function HammerNotion:loadConfig(debug)
     if debug then
