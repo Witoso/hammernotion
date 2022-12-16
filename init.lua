@@ -128,7 +128,7 @@ function HammerNotion:getProperties(string, splitPattern, databaseName)
             databaseProperties["$first"] = nil
         end
         --  iterate if it maches any pattern in properties
-        local t = split(content, ":")
+        local t = split(content, "->")
         for key, value2 in pairs(databaseProperties) do
             if key == t[1] then
                 propertyInfo = databaseProperties[t[1]]
