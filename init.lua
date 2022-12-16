@@ -105,6 +105,11 @@ function processProperty(propertyInfo, input)
                 name = input
             }
         }
+    elseif propertyInfo.type == "url" then
+        local urlField = propertyInfo.key
+        return {
+            url = input
+        }
     end
 end
 
