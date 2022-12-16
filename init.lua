@@ -19,17 +19,6 @@ function HammerNotion:loadConfig(debug)
     self.config = hs.json.read(hammerspoonPath .. configFilename)
 end
 
-function HammerNotion:sendNotionPostRequest(jsonData)
-
-    local url = "https://api.notion.com/v1/pages"
-    local headers = {}
-    headers["Content-Type"] = "application/json"
-    headers["Notion-Version"] = "2022-06-28"
-    headers["Authorization"] = "Bearer " .. self.apiKey
-
-    local statusCode, response, headers = hs.http.post(url, jsonData, headers)
-    return statusCode, response, headers
-end
 
 function HammerNotion:createPage(databaseName, properties)
     local data = {}
@@ -51,6 +40,75 @@ function HammerNotion:createPage(databaseName, properties)
         hs.notify.show("HammerNotion", "Error adding task. Status Code: " .. statusCode, "")
     end
 end
+
+
+function HammerNotion:sendNotionPostRequest(jsonData)
+
+    local url = "https://api.notion.com/v1/pages"
+    local headers = {}
+    headers["Content-Type"] = "application/json"
+    headers["Notion-Version"] = "2022-06-28"
+    headers["Authorization"] = "Bearer " .. self.apiKey
+
+    local statusCode, response, headers = hs.http.post(url, jsonData, headers)
+    return statusCode, response, headers
+end
+
+
+
+function HammerNotion:getProperties(string, splitPattern, databaseName)
+
+    local t = split(string, splitPattern)
+    local databaseProperties = deepcopy(self.config[databaseName].properties)
+
+    local propertyInfo = {}
+    local properties = {}
+    for index, value in ipairs(t) do
+        local content = trim(value)
+        if index == 1 then
+            propertyInfo = databaseProperties["$first"]
+            properties[propertyInfo.key] = self.processProperty(propertyInfo, content)
+            databaseProperties["$first"] = nil
+        end
+        --  iterate if it maches any pattern in properties
+        local t = split(content, "->")
+        for key, value2 in pairs(databaseProperties) do
+            if key == t[1] then
+                propertyInfo = databaseProperties[t[1]]
+                properties[propertyInfo.key] = processProperty(propertyInfo, trim(t[2]))
+                databaseProperties[key] = nil
+            end
+        end
+    end
+    return properties
+end
+
+
+function HammerNotion:processProperty(propertyInfo, input)
+    if propertyInfo.type == "title" then
+        return {
+            title = {{
+                text = {
+                    content = input
+                }
+            }}
+        }
+    elseif propertyInfo.type == "select" then
+        return {
+            select = {
+                name = input
+            }
+        }
+    elseif propertyInfo.type == "url" then
+        local urlField = propertyInfo.key
+        return {
+            url = input
+        }
+    end
+end
+
+
+-- HELPERS
 
 local function split(str, pat)
     local t = {} -- NOTE: use {n = 0} in Lua-5.0
@@ -90,55 +148,5 @@ local function deepcopy(orig)
     return copy
 end
 
-function processProperty(propertyInfo, input)
-    if propertyInfo.type == "title" then
-        return {
-            title = {{
-                text = {
-                    content = input
-                }
-            }}
-        }
-    elseif propertyInfo.type == "select" then
-        return {
-            select = {
-                name = input
-            }
-        }
-    elseif propertyInfo.type == "url" then
-        local urlField = propertyInfo.key
-        return {
-            url = input
-        }
-    end
-end
-
-function HammerNotion:getProperties(string, splitPattern, databaseName)
-
-    local t = split(string, splitPattern)
-    local databaseProperties = deepcopy(self.config[databaseName].properties)
-
-    local propertyInfo = {}
-    local properties = {}
-    for index, value in ipairs(t) do
-        local content = trim(value)
-        if index == 1 then
-            propertyInfo = databaseProperties["$first"]
-            properties[propertyInfo.key] = processProperty(propertyInfo, content)
-            databaseProperties["$first"] = nil
-        end
-        --  iterate if it maches any pattern in properties
-        local t = split(content, "->")
-        for key, value2 in pairs(databaseProperties) do
-            if key == t[1] then
-                propertyInfo = databaseProperties[t[1]]
-                properties[propertyInfo.key] = processProperty(propertyInfo, trim(t[2]))
-                databaseProperties[key] = nil
-            end
-        end
-    end
-    -- print(hs.json.encode(properties))
-    return properties
-end
 
 return HammerNotion
