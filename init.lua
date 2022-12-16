@@ -24,7 +24,7 @@ function HammerNotion:sendNotionPostRequest(jsonData)
     local url = "https://api.notion.com/v1/pages"
     local headers = {}
     headers["Content-Type"] = "application/json"
-    headers["Notion-Version"] = "2021-08-16"
+    headers["Notion-Version"] = "2022-06-28"
     headers["Authorization"] = "Bearer " .. self.apiKey
 
     local statusCode, response, headers = hs.http.post(url, jsonData, headers)
