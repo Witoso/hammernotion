@@ -71,16 +71,17 @@ end
 function HammerNotion:sendNotionPostRequest(jsonData)
 	local url = "https://api.notion.com/v1/pages"
 	local headers = {}
+	headers["User-Agent"] = "HammerNotion / " .. self.version
 	headers["Content-Type"] = "application/json"
 	headers["Notion-Version"] = "2022-06-28"
 	headers["Authorization"] = "Bearer " .. self.apiKey
 
 	hs.http.asyncPost(url, jsonData, headers, function(statusCode, response, response_headers)
 		if self.debug then
-			print("HammerNotion request:")
+			print("Notion response:")
 			print(statusCode)
 			print(response)
-			print(response_headers)
+			tprint(response_headers)
 		end
 		if statusCode == 200 then
 			hs.notify.show("HammerNotion", "New page added!", "")
@@ -90,8 +91,8 @@ function HammerNotion:sendNotionPostRequest(jsonData)
 	end)
 end
 
-function HammerNotion:processProperty(propertyInfo, input)
-	if propertyInfo.type == "title" then
+function HammerNotion:processProperty(type, input)
+	if type == "title" then
 		return {
 			title = { {
 				text = {
@@ -99,14 +100,13 @@ function HammerNotion:processProperty(propertyInfo, input)
 				},
 			} },
 		}
-	elseif propertyInfo.type == "select" then
+	elseif type == "select" then
 		return {
 			select = {
 				name = input,
 			},
 		}
-	elseif propertyInfo.type == "url" then
-		local urlField = propertyInfo.key
+	elseif type == "url" then
 		return {
 			url = input,
 		}
@@ -145,18 +145,22 @@ function HammerNotion:getProperties(query, querySplitPattern, propertySplitPatte
 	for index, value in ipairs(splittedQuery) do
 		local content = trim(value)
 		if index == 1 then
-			local propertyInfo = databaseProperties["$first"]
-			properties[propertyInfo.key] = self:processProperty(propertyInfo, content)
-			databaseProperties["$first"] = nil
+			local propertyInfo = databaseProperties["first"]
+			properties[propertyInfo.key] = self:processProperty(propertyInfo.type, content)
+			databaseProperties["first"] = nil
 		end
 		--  iterate if it maches any pattern in properties
 		local splittedProperty = split(content, propertySplitPattern)
 		for pattern, propertyInfo in pairs(databaseProperties) do
 			if pattern == splittedProperty[1] then
-				properties[propertyInfo.key] = self:processProperty(propertyInfo, trim(splittedProperty[2]))
+				properties[propertyInfo.key] = self:processProperty(propertyInfo.type, trim(splittedProperty[2]))
 				databaseProperties[pattern] = nil
 			end
 		end
+	end
+	if self.debug then
+        print("Properties:")
+		tprint(properties, 2)
 	end
 	return properties
 end
