@@ -4,8 +4,8 @@ HammerNotion.__index = HammerNotion
 HammerNotion.name = "HammerNotion"
 HammerNotion.version = "0.1"
 HammerNotion.author = "Witek Socha"
-HammerNotion.license = "MIT - https://opensource.org/licenses/MIT"
-HammerNotion.homepage = ""
+HammerNotion.license = "GPL v3"
+HammerNotion.homepage = "https://github.com/Witoso/hammernotion"
 
 -- HELPERS
 
